@@ -1,5 +1,8 @@
 # dist · 成品目录
 
+> 最新发布：**v1.3.0** — <https://github.com/gausan-hj/ModSync/releases/tag/v1.3.0>
+> 本目录同时保留历史 0.1.0 构建，方便对照与回退。
+
 按加载器和 Minecraft 版本分开放，jar 不要跨加载器混装。
 
 ```text
