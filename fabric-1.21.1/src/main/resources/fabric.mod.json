@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "modsync",
+  "version": "${version}",
+  "name": "ModSync",
+  "description": "ModSync —— 联机模组同步\n\n房主装好的模组，客户端进服前自动同步。\n不用手动整理整合包，装一个 ModSync 就够了。\n\n作者：gausan123\n测试：鸭鸭",
+  "authors": [
+    "gausan123"
+  ],
+  "license": "MIT",
+  "icon": "assets/modsync/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.modsync.ModSync"
+    ],
+    "client": [
+      "dev.modsync.client.ModSyncClient"
+    ]
+  },
+  "mixins": [
+    "modsync.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "${minecraft_dependency}",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "contributors": [
+    "鸭鸭 (Tester)"
+  ]
+}
