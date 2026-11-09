@@ -57,9 +57,13 @@ public final class ModInstaller {
 
 			for (ManifestMod mod : manifestFile.mods()) {
 				Path local = localById.get(mod.id());
-				if (local != null && !local.equals(target) && Files.exists(local) && backup) {
-					backupDir = ensureBackupDir(modsDir, backupDir);
-					backup(local, backupDir, backedUp);
+				if (local != null && !local.equals(target) && Files.exists(local)) {
+					if (backup) {
+						backupDir = ensureBackupDir(modsDir, backupDir);
+						backup(local, backupDir, backedUp);
+					} else {
+						Files.deleteIfExists(local);
+					}
 				}
 			}
 

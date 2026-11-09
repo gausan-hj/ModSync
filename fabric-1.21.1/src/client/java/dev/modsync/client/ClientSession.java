@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,7 @@ public final class ClientSession {
 	private final String serverName;
 	private final String serverKey;
 	private final Map<Integer, IncomingFile> incoming = new ConcurrentHashMap<>();
+	private final List<ModInstaller.VerifiedFile> cachedFiles = new ArrayList<>();
 
 	private volatile Phase phase = Phase.REVIEW;
 	private volatile int expectedFiles;
@@ -153,20 +155,40 @@ public final class ClientSession {
 		if (phase != Phase.REVIEW) {
 			return false;
 		}
-		List<String> files = plan.filesToDownload().stream().map(ManifestFile::file).toList();
+		List<String> files = new ArrayList<>();
+		cachedFiles.clear();
+		try {
+			Files.createDirectories(tempDir);
+			for (ManifestFile file : plan.filesToDownload()) {
+				Path cached = FabricCache.find(file.sha256());
+				if (cached == null) {
+					files.add(file.file());
+					continue;
+				}
+				Path copy = tempDir.resolve("cached-" + SafeNames.jarName(file.file(), cachedFiles.size()));
+				Files.copy(cached, copy, StandardCopyOption.REPLACE_EXISTING);
+				cachedFiles.add(new ModInstaller.VerifiedFile(file, copy, file.sha256()));
+			}
+			if (files.isEmpty()) {
+				for (ManifestFile file : plan.filesToDownload()) {
+					files.add(file.file());
+				}
+				cachedFiles.clear();
+			}
+		} catch (IOException e) {
+			fail("Could not prepare the download folder: " + e.getMessage());
+			return false;
+		}
 		if (files.isEmpty()) {
 			return false;
 		}
-		try {
-			Files.createDirectories(tempDir);
-		} catch (IOException e) {
-			fail("Could not create temporary folder: " + e.getMessage());
-			return false;
-		}
 		expectedFiles = files.size();
-		totalBytes = plan.requiredBytes();
-		receivedBytes = 0;
-		completedFiles = 0;
+		totalBytes = files.stream().mapToLong(name -> {
+			ManifestFile file = manifest.find(name);
+			return file == null ? 0 : file.size();
+		}).sum();
+		receivedBytes = cachedFiles.stream().mapToLong(file -> file.manifest().size()).sum();
+		completedFiles = cachedFiles.size();
 		startedAt = System.currentTimeMillis();
 		phase = Phase.DOWNLOADING;
 		if (!send(new Message.Request(manifest.nonce(), files))) {
@@ -357,7 +379,9 @@ public final class ClientSession {
 					return;
 				}
 				verified.add(new ModInstaller.VerifiedFile(manifestFile, file.path, actual));
+				FabricCache.store(file.path, actual);
 			}
+			verified.addAll(cachedFiles);
 
 			phase = Phase.INSTALLING;
 			ModInstaller.InstallResult result = ModInstaller.install(

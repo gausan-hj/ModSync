@@ -5,6 +5,10 @@ import dev.modsync.manifest.SyncManifest.ManifestFile;
 import dev.modsync.manifest.SyncManifest.ManifestMod;
 import org.junit.jupiter.api.Test;
 
+import dev.modsync.util.Hashes;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -67,6 +71,21 @@ class SyncPlannerTest {
 		));
 		assertEquals(1, plan.extraLocalMods().size());
 		assertEquals("extra", plan.extraLocalMods().getFirst().id());
+	}
+
+	@Test
+	void sameVersionDifferentContentsIsMismatched(@TempDir Path temp) throws Exception {
+		Path localJar = temp.resolve("a.jar");
+		Files.writeString(localJar, "client build");
+		Path serverJar = temp.resolve("server.jar");
+		Files.writeString(serverJar, "server build");
+		String serverHash = Hashes.sha256(serverJar);
+		ManifestFile remote = new ManifestFile("a.jar", Files.size(serverJar), true,
+				List.of(new ManifestMod("a", "1.0", "A", "UNIVERSAL")), serverHash, "mods");
+		SyncPlan plan = SyncPlanner.plan(SyncManifest.create("s", "n", List.of(remote)),
+				List.of(new LocalMod("a", "1.0", "A", "UNIVERSAL", localJar)));
+		assertEquals(FileDecision.Status.VERSION_MISMATCH, plan.decisions().getFirst().status());
+		assertEquals(1, plan.requiredDownloads());
 	}
 
 	@Test

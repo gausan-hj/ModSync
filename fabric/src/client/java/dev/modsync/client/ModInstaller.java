@@ -67,9 +67,13 @@ public final class ModInstaller {
 			if (manifestFile.isMod()) {
 				for (ManifestMod mod : manifestFile.mods()) {
 					Path local = localById.get(mod.id());
-					if (local != null && !local.equals(target) && Files.exists(local) && backup) {
-						backupDir = ensureBackupDir(normalizedGame, backupDir);
-						backup(local, backupDir, backedUp);
+					if (local != null && !local.equals(target) && Files.exists(local)) {
+						if (backup) {
+							backupDir = ensureBackupDir(normalizedGame, backupDir);
+							backup(local, backupDir, backedUp);
+						} else {
+							Files.deleteIfExists(local);
+						}
 					}
 				}
 			}

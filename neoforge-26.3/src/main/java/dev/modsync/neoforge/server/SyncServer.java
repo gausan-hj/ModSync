@@ -45,6 +45,7 @@ public final class SyncServer {
 	private static volatile HttpServer http;
 	private static volatile ExecutorService executor;
 	private static volatile int port = -1;
+	private static volatile int gamePort = -1;
 	private static volatile SyncManifest manifest;
 	private static volatile Map<String, Path> files = Map.of();
 
@@ -82,6 +83,8 @@ public final class SyncServer {
 				serverCandidate.createContext(PREFIX + "manifest.json", SyncServer::handleManifest);
 				serverCandidate.createContext(PREFIX + "files/", SyncServer::handleFile);
 				serverCandidate.createContext(PREFIX + "health", SyncServer::handleHealth);
+				serverCandidate.createContext(PREFIX + "panel", SyncServer::handlePanel);
+				serverCandidate.createContext(PREFIX + "api/status", SyncServer::handleStatus);
 				ExecutorService pool = Executors.newFixedThreadPool(2, runnable -> {
 					Thread thread = new Thread(runnable, "ModSync-http");
 					thread.setDaemon(true);
@@ -105,6 +108,7 @@ public final class SyncServer {
 			ModSyncNeoForge.LOGGER.error("ModSync could not bind any sync port; clients will not be able to download");
 			return;
 		}
+		gamePort = server.getPort();
 		ModSyncNeoForge.LOGGER.info("ModSync sync server listening on 0.0.0.0:{} ({} jar(s), {} bytes)",
 				port, manifest.files().size(), manifest.totalBytes());
 	}
@@ -156,7 +160,7 @@ public final class SyncServer {
 			} catch (IOException e) {
 				continue;
 			}
-			if (!real.startsWith(realMods) || !real.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")) {
+			if (real == null || !real.startsWith(realMods) || !real.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")) {
 				continue;
 			}
 
@@ -233,6 +237,62 @@ public final class SyncServer {
 		sendText(exchange, 200, "ok");
 	}
 
+	private static void handleStatus(HttpExchange exchange) throws IOException {
+		SyncManifest current = manifest;
+		String body = "{\"ok\":true,\"gamePort\":" + gamePort + ",\"syncPort\":" + port
+				+ ",\"files\":" + (current == null ? 0 : current.files().size())
+				+ ",\"bytes\":" + (current == null ? 0 : current.totalBytes()) + "}";
+		exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+		byte[] data = body.getBytes(StandardCharsets.UTF_8);
+		exchange.sendResponseHeaders(200, data.length);
+		try (OutputStream out = exchange.getResponseBody()) {
+			out.write(data);
+		}
+	}
+
+	private static void handlePanel(HttpExchange exchange) throws IOException {
+		SyncManifest current = manifest;
+		StringBuilder html = new StringBuilder("""
+				<!doctype html><html><head><meta charset="utf-8">
+				<title>ModSync Panel</title>
+				<style>
+				body{background:#141414;color:#e8e8e8;font:14px system-ui,Segoe UI,sans-serif;margin:0;padding:24px}
+				h1{font-size:20px;margin:0 0 4px}.sub{color:#9a9a9a;margin-bottom:20px}
+				table{border-collapse:collapse;width:100%;max-width:1000px}
+				th,td{padding:8px 10px;border-bottom:1px solid #2c2c2c;text-align:left}
+				th{color:#9a9a9a;font-weight:500}.sha{color:#777;font-family:monospace;font-size:12px}
+				</style></head><body>
+				<h1>ModSync Panel</h1>
+				<div class="sub">""");
+		html.append("game port ").append(gamePort).append(" &middot; sync port ").append(port).append("</div>");
+		if (current == null) {
+			html.append("<p>manifest not ready</p>");
+		} else {
+			html.append("<p>").append(current.files().size()).append(" file(s), ")
+					.append(current.totalBytes()).append(" bytes</p><table><tr><th>File</th><th>Size</th><th>SHA-256</th></tr>");
+			for (ManifestFile file : current.files()) {
+				html.append("<tr><td>").append(escape(file.file())).append("</td><td>")
+						.append(file.size()).append("</td><td class=\"sha\">")
+						.append(escape(file.sha256())).append("</td></tr>");
+			}
+			html.append("</table>");
+		}
+		html.append("</body></html>");
+		byte[] data = html.toString().getBytes(StandardCharsets.UTF_8);
+		exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+		exchange.sendResponseHeaders(200, data.length);
+		try (OutputStream out = exchange.getResponseBody()) {
+			out.write(data);
+		}
+	}
+
+	private static String escape(String value) {
+		if (value == null) {
+			return "";
+		}
+		return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+	}
+
 	private static void handleFile(HttpExchange exchange) throws IOException {
 		String rawPath = exchange.getRequestURI().getRawPath();
 		String prefix = PREFIX + "files/";
@@ -259,15 +319,59 @@ public final class SyncServer {
 			sendText(exchange, 500, "read error");
 			return;
 		}
+		long start = 0;
+		long end = size - 1;
+		boolean partial = false;
+		String range = exchange.getRequestHeaders().getFirst("Range");
+		if (range != null && range.startsWith("bytes=")) {
+			String spec = range.substring("bytes=".length()).trim();
+			int dash = spec.indexOf('-');
+			if (dash <= 0) {
+				sendText(exchange, 416, "bad range");
+				return;
+			}
+			try {
+				start = Long.parseLong(spec.substring(0, dash));
+				if (dash + 1 < spec.length()) {
+					end = Long.parseLong(spec.substring(dash + 1));
+				}
+			} catch (NumberFormatException e) {
+				sendText(exchange, 416, "bad range");
+				return;
+			}
+			if (start < 0 || start >= size) {
+				exchange.getResponseHeaders().set("Content-Range", "bytes */" + size);
+				sendText(exchange, 416, "range not satisfiable");
+				return;
+			}
+			end = Math.min(end, size - 1);
+			if (end < start) {
+				end = size - 1;
+			}
+			partial = true;
+		}
+		long length = end - start + 1;
 		exchange.getResponseHeaders().set("Content-Type", "application/java-archive");
-		exchange.getResponseHeaders().set("Content-Length", Long.toString(size));
+		exchange.getResponseHeaders().set("Accept-Ranges", "bytes");
+		exchange.getResponseHeaders().set("Content-Length", Long.toString(length));
+		if (partial) {
+			exchange.getResponseHeaders().set("Content-Range", "bytes " + start + "-" + end + "/" + size);
+		}
 		exchange.getResponseHeaders().set("Cache-Control", "no-store");
-		exchange.sendResponseHeaders(200, size);
-		try (InputStream in = Files.newInputStream(path); OutputStream out = exchange.getResponseBody()) {
+		exchange.sendResponseHeaders(partial ? 206 : 200, length);
+		try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(path.toFile(), "r");
+			 OutputStream out = exchange.getResponseBody()) {
+			raf.seek(start);
 			byte[] buffer = new byte[64 * 1024];
-			int read;
-			while ((read = in.read(buffer)) >= 0) {
+			long remaining = length;
+			while (remaining > 0) {
+				int want = (int) Math.min(buffer.length, remaining);
+				int read = raf.read(buffer, 0, want);
+				if (read < 0) {
+					break;
+				}
 				out.write(buffer, 0, read);
+				remaining -= read;
 			}
 		}
 	}
@@ -287,5 +391,9 @@ public final class SyncServer {
 
 	public static SyncManifest manifest() {
 		return manifest;
+	}
+
+	public static Path fileFor(String name) {
+		return files.get(name);
 	}
 }

@@ -77,20 +77,47 @@ public final class SyncHttpClient {
 
 	public static String download(Remote remote, String fileName, Path target, Progress progress) throws IOException {
 		Files.createDirectories(target.getParent());
+		long existing = Files.isRegularFile(target) ? Files.size(target) : 0;
 		String encoded = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
-		HttpRequest request = HttpRequest.newBuilder(URI.create(remote.base() + "files/" + encoded))
+		HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(remote.base() + "files/" + encoded))
 				.timeout(Duration.ofMinutes(30))
 				.header("Accept", "application/java-archive")
-				.GET()
-				.build();
+				.GET();
+		if (existing > 0) {
+			builder.header("Range", "bytes=" + existing + "-");
+		}
 		try {
-			HttpResponse<InputStream> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
-			if (response.statusCode() != 200) {
+			HttpResponse<InputStream> response = CLIENT.send(builder.build(), HttpResponse.BodyHandlers.ofInputStream());
+			boolean append = response.statusCode() == 206 && existing > 0;
+			if (response.statusCode() == 416 && existing > 0) {
+				Files.deleteIfExists(target);
+				return download(remote, fileName, target, progress);
+			}
+			if (response.statusCode() != 200 && response.statusCode() != 206) {
 				throw new IOException("file HTTP " + response.statusCode());
 			}
+			long start = append ? existing : 0;
 			MessageDigest digest = dev.modsync.util.Hashes.newDigest();
-			long received = 0;
-			try (InputStream in = response.body(); var out = Files.newOutputStream(target)) {
+			if (append) {
+				try (InputStream old = Files.newInputStream(target)) {
+					byte[] buffer = new byte[64 * 1024];
+					int read;
+					while ((read = old.read(buffer)) >= 0) {
+						if (read > 0) {
+							digest.update(buffer, 0, read);
+						}
+					}
+				}
+			}
+			long received = start;
+			if (progress != null) {
+				progress.update(received);
+			}
+			try (InputStream in = response.body();
+				 var out = Files.newOutputStream(target, append
+						 ? java.nio.file.StandardOpenOption.APPEND
+						 : java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
+						 java.nio.file.StandardOpenOption.CREATE)) {
 				byte[] buffer = new byte[64 * 1024];
 				int read;
 				while ((read = in.read(buffer)) >= 0) {

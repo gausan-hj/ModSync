@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /** Sequential HTTP download into a staging folder, then verify and install. */
 public final class ForgeDownloadJob {
@@ -33,7 +32,6 @@ public final class ForgeDownloadJob {
 	private final SyncPlan plan;
 	private final ServerData server;
 	private final Path modsDir;
-	private final Path tempDir;
 
 	private volatile Phase phase = Phase.DOWNLOADING;
 	private volatile String currentFile = "";
@@ -55,7 +53,6 @@ public final class ForgeDownloadJob {
 		this.plan = plan;
 		this.server = server;
 		this.modsDir = FMLPaths.GAMEDIR.get().resolve("mods");
-		this.tempDir = modsDir.resolve(".modsync-tmp").resolve(UUID.randomUUID().toString());
 		this.total = plan.requiredBytes();
 		this.expectedFiles = plan.downloads().size();
 	}
@@ -77,7 +74,6 @@ public final class ForgeDownloadJob {
 
 	private void run() {
 		try {
-			Files.createDirectories(tempDir);
 			List<ModInstaller.VerifiedFile> verified = new ArrayList<>();
 			int index = 0;
 			for (FileDecision decision : plan.downloads()) {
@@ -88,18 +84,33 @@ public final class ForgeDownloadJob {
 				currentFile = file.file();
 				currentSize = file.size();
 				currentReceived = 0;
-				Path temp = tempDir.resolve(index + "-" + SafeNames.jarName(file.file(), index));
-				String hash = SyncHttpClient.download(remote, file.file(), temp, bytes -> currentReceived = bytes);
+				Path temp = file.sha256().isBlank()
+						? ForgeCache.partialFor("unhashed-" + index)
+						: ForgeCache.partialFor(file.sha256());
+				Files.createDirectories(temp.getParent());
+				Path cached = ForgeCache.find(file.sha256());
+				String hash;
+				if (cached != null) {
+					Files.copy(cached, temp, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					currentReceived = Files.size(temp);
+					hash = file.sha256();
+					ModSyncForge.LOGGER.info("Reused cached {}", file.file());
+				} else {
+					hash = SyncHttpClient.download(remote, file.file(), temp, bytes -> currentReceived = bytes);
+				}
 				if (cancelled) {
 					return;
 				}
 				long actualSize = Files.size(temp);
 				if (actualSize != file.size()) {
+					Files.deleteIfExists(temp);
 					throw new IOException("size mismatch for " + file.file() + ": " + actualSize + " != " + file.size());
 				}
 				if (!file.sha256().isBlank() && !hash.equalsIgnoreCase(file.sha256())) {
+					Files.deleteIfExists(temp);
 					throw new IOException("SHA-256 mismatch for " + file.file());
 				}
+				ForgeCache.store(temp, file.sha256());
 				verified.add(new ModInstaller.VerifiedFile(file, temp, hash));
 				received += file.size();
 				completedFiles++;
@@ -119,7 +130,9 @@ public final class ForgeDownloadJob {
 			installed = result.installed().size();
 			backupDir = result.backupDir();
 			phase = Phase.DONE;
-			cleanup();
+			for (ModInstaller.VerifiedFile file : verified) {
+				Files.deleteIfExists(file.temp());
+			}
 			ModSyncForge.LOGGER.info("ModSync installed {} files from {}", installed, server.ip);
 		} catch (Exception e) {
 			if (cancelled) {
@@ -133,27 +146,7 @@ public final class ForgeDownloadJob {
 	}
 
 	private void cleanup() {
-		try {
-			if (Files.isDirectory(tempDir)) {
-				try (var stream = Files.walk(tempDir)) {
-					stream.sorted((a, b) -> b.getNameCount() - a.getNameCount()).forEach(path -> {
-						try {
-							Files.deleteIfExists(path);
-						} catch (IOException ignored) {
-						}
-					});
-				}
-			}
-			Path parent = tempDir.getParent();
-			if (parent != null && Files.isDirectory(parent)) {
-				try (var children = Files.list(parent)) {
-					if (children.findAny().isEmpty()) {
-						Files.deleteIfExists(parent);
-					}
-				}
-			}
-		} catch (IOException ignored) {
-		}
+		// Partial files are intentionally kept in .modsync-cache/.partial for Range resume.
 	}
 
 	public Phase phase() {
