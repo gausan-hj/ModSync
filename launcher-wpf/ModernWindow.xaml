@@ -1,0 +1,583 @@
+<Window x:Class="ModSyncLauncher.ModernWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="ModSync" Height="760" Width="1180" Icon="/Assets/modsync.ico"
+        MinHeight="680" MinWidth="1060"
+        WindowStyle="None" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen"
+        Background="#F3FAF7"
+        FontFamily="Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI"
+        Foreground="#15362C"
+        TextOptions.TextFormattingMode="Ideal"
+        Loaded="Window_Loaded">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="Ink" Color="#15362C"/>
+        <SolidColorBrush x:Key="Muted" Color="#758981"/>
+        <SolidColorBrush x:Key="Line" Color="#DCEDE6"/>
+        <SolidColorBrush x:Key="Mint" Color="#2FBE9D"/>
+        <SolidColorBrush x:Key="MintDeep" Color="#17886C"/>
+        <SolidColorBrush x:Key="MintSoft" Color="#E4F8F1"/>
+        <SolidColorBrush x:Key="Card" Color="#FFFFFF"/>
+
+        <DropShadowEffect x:Key="SoftShadow" Color="#1D6F5B" BlurRadius="28" ShadowDepth="6" Opacity="0.08"/>
+        <DropShadowEffect x:Key="ButtonShadow" Color="#17886C" BlurRadius="24" ShadowDepth="8" Opacity="0.28"/>
+
+        <Style x:Key="ModernCard" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Card}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Effect" Value="{StaticResource SoftShadow}"/>
+        </Style>
+
+        <Style x:Key="PillNav" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#5F756C"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Root" Background="Transparent" CornerRadius="11" Padding="16,8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#F0FAF6"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource MintSoft}"/>
+                                <Setter Property="Foreground" Value="{StaticResource MintDeep}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="WindowButton" TargetType="Button">
+            <Setter Property="Width" Value="38"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#6A7F76"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E7F6F0"/>
+                    <Setter Property="Foreground" Value="{StaticResource MintDeep}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MintButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource MintDeep}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect" Value="{StaticResource ButtonShadow}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="14" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#0F755C"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#0B614B"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SoftButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource MintDeep}"/>
+            <Setter Property="Background" Value="{StaticResource MintSoft}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,9"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#D3F3E8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SmallPill" TargetType="Button">
+            <Setter Property="Background" Value="#F0F7F4"/>
+            <Setter Property="Foreground" Value="#385A4E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="9,4"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#DDF3EA"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="58"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- title bar -->
+        <Grid Grid.Row="0" Margin="20,0,12,0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Width="32" Height="32" CornerRadius="10">
+                    <Border.Background>
+                        <ImageBrush ImageSource="/Assets/modsync.png" Stretch="UniformToFill"/>
+                    </Border.Background>
+                </Border>
+                <TextBlock Text="ModSync" FontSize="16" FontWeight="SemiBold" Margin="11,0,0,0" VerticalAlignment="Center"/>
+                <Border Background="{StaticResource MintSoft}" CornerRadius="999" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="1.4.0" FontSize="10" Foreground="{StaticResource MintDeep}"/>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <RadioButton x:Name="NavStart" Style="{StaticResource PillNav}" Content="启动" Tag="start" GroupName="nav" IsChecked="True" Checked="Nav_Checked"/>
+                <RadioButton x:Name="NavLibrary" Style="{StaticResource PillNav}" Content="实例" Tag="library" GroupName="nav" Checked="Nav_Checked"/>
+                <RadioButton x:Name="NavMods" Style="{StaticResource PillNav}" Content="模组" Tag="mods" GroupName="nav" Checked="Nav_Checked"/>
+                <RadioButton x:Name="NavDownload" Style="{StaticResource PillNav}" Content="下载" Tag="download" GroupName="nav" Checked="Nav_Checked"/>
+                <RadioButton x:Name="NavSettings" Style="{StaticResource PillNav}" Content="设置" Tag="settings" GroupName="nav" Checked="Nav_Checked"/>
+            </StackPanel>
+
+            <Button Grid.Column="2" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="Account_Click" Margin="0,0,8,0">
+                <StackPanel Orientation="Horizontal">
+                    <Border x:Name="TopAvatar" Width="30" Height="30" CornerRadius="9">
+                        <Border.Background>
+                            <ImageBrush ImageSource="/Assets/avatar.png" Stretch="UniformToFill"/>
+                        </Border.Background>
+                    </Border>
+                    <StackPanel Margin="8,0,0,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="TopName" Text="Steve" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                        <TextBlock x:Name="TopType" Text="离线账号" FontSize="10" Foreground="{StaticResource Muted}" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </StackPanel>
+            </Button>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Style="{StaticResource WindowButton}" Content="—" Click="Minimize_Click"/>
+                <Button Style="{StaticResource WindowButton}" Content="□" Click="Maximize_Click"/>
+                <Button Style="{StaticResource WindowButton}" Content="×" Click="Close_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- body -->
+        <Grid Grid.Row="1" Margin="20,4,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- left column -->
+            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                <Border Style="{StaticResource ModernCard}" Padding="18">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="SideAvatar" Width="58" Height="58" CornerRadius="16">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="/Assets/avatar.png" Stretch="UniformToFill"/>
+                                </Border.Background>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="SideName" Text="Steve" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="SideType" Text="离线账号" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Style="{StaticResource SoftButton}" Content="切换账号" Margin="0,14,0,0" Height="34"
+                                Click="Account_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModernCard}" Margin="0,12,0,0" Padding="18"
+                        Background="#F8FEFB" BorderBrush="#CDEDE1" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Text="当前实例" FontSize="10.5" Foreground="{StaticResource Muted}"/>
+                        <ComboBox x:Name="InstanceBox" Height="32" Margin="0,5,0,0" DisplayMemberPath="Name"
+                                  SelectionChanged="InstanceBox_SelectionChanged"/>
+                        <TextBlock x:Name="InstanceTitle" Text="本地版本" FontSize="17" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                        <ComboBox x:Name="VersionBox" Height="30" Margin="0,6,0,0" SelectionChanged="VersionBox_SelectionChanged"/>
+                        <ComboBox x:Name="LoaderBox" Height="30" Margin="0,6,0,0" SelectionChanged="Loader_SelectionChanged">
+                            <ComboBoxItem Content="NeoForge"/>
+                            <ComboBoxItem Content="Fabric"/>
+                            <ComboBoxItem Content="Forge"/>
+                        </ComboBox>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Border Background="{StaticResource MintSoft}" CornerRadius="7" Padding="7,3">
+                                <TextBlock Text="NeoForge" FontSize="10" Foreground="{StaticResource MintDeep}"/>
+                            </Border>
+                            <Border Background="#F1F6F3" CornerRadius="7" Padding="7,3" Margin="5,0,0,0">
+                                <TextBlock Text="1.21.1" FontSize="10" Foreground="{StaticResource Muted}"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+            <!-- main -->
+            <ScrollViewer x:Name="StartView" Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <!-- hero -->
+                    <Border CornerRadius="24" Padding="32" ClipToBounds="True" Effect="{StaticResource SoftShadow}">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#3CCBA8" Offset="0"/>
+                                <GradientStop Color="#15876C" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Ellipse Width="300" Height="300" Fill="#12FFFFFF" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                     Margin="0,-150,-80,0"/>
+                            <Ellipse Width="220" Height="220" Fill="#0DFFFFFF" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                     Margin="0,0,80,-140"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="190"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock x:Name="HeroGreeting" Text="你好，Steve" FontSize="28" FontWeight="SemiBold" Foreground="White"/>
+                                    <TextBlock x:Name="HeroSubtitle" Text="准备好开始游戏了吗？" FontSize="13" Foreground="#E1FFF7" Margin="0,8,0,0"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,9,0,0">
+                                        <TextBlock x:Name="HeroInstanceText" Text="当前实例" FontSize="11.5" Foreground="#E1FFF7" VerticalAlignment="Center"/>
+                                        <Button Content="切换实例 →" Background="Transparent" BorderThickness="0"
+                                                Foreground="White" FontSize="10.5" Margin="10,0,0,0" Cursor="Hand"
+                                                Click="OpenLibrary_Click"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                        <Border Background="#22FFFFFF" CornerRadius="8" Padding="10,4">
+                                            <TextBlock x:Name="HeroModCount" Text="15 个模组" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                        <Border Background="#22FFFFFF" CornerRadius="8" Padding="10,4" Margin="6,0,0,0">
+                                            <TextBlock x:Name="HeroJavaChip" Text="Java 21" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                        <Border Background="#22FFFFFF" CornerRadius="8" Padding="10,4" Margin="6,0,0,0">
+                                            <TextBlock x:Name="HeroMemoryChip" Text="4096 MB" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <Button x:Name="LaunchButton" Content="▶   启动游戏" HorizontalAlignment="Left" Margin="0,26,0,0"
+                                            Background="White" Foreground="#15876C" BorderThickness="0"
+                                            FontSize="14" FontWeight="SemiBold" Padding="26,13" Cursor="Hand"
+                                            Click="Launch_Click">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="14"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                    <TextBlock x:Name="LaunchStatus" Text="" FontSize="10" Foreground="#E1FFF7" Margin="0,9,0,0"/>
+                                    <ProgressBar x:Name="LaunchProgress" Height="3" IsIndeterminate="True" Visibility="Collapsed"
+                                                 Foreground="White" Background="#33FFFFFF" BorderThickness="0" Margin="0,7,0,0"/>
+                                </StackPanel>
+
+                                <Grid Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Ellipse Width="138" Height="138" Fill="#18FFFFFF"/>
+                                    <Ellipse Width="110" Height="110" Fill="#22FFFFFF"/>
+                                    <TextBlock Text="▶" FontSize="38" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Margin="5,0,0,0"/>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- stats -->
+                    <Grid Margin="0,14,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource ModernCard}" Padding="18">
+                            <StackPanel>
+                                <TextBlock Text="已安装模组" FontSize="10.5" Foreground="{StaticResource Muted}"/>
+                                <TextBlock x:Name="InstalledCountText" Text="15" FontSize="25" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                                <TextBlock Text="全部已同步" FontSize="10" Foreground="{StaticResource MintDeep}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource ModernCard}" Padding="18">
+                            <StackPanel>
+                                <TextBlock Text="上次启动" FontSize="10.5" Foreground="{StaticResource Muted}"/>
+                                <TextBlock x:Name="LastLaunchText" Text="尚未启动" FontSize="22" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                                <TextBlock x:Name="LastLaunchVersion" Text="—" FontSize="10" Foreground="{StaticResource Muted}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- bottom -->
+                    <Grid Margin="0,14,0,0">
+                        <Border Style="{StaticResource ModernCard}" Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="最近更新" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="Waystones" FontSize="11" FontWeight="SemiBold" Margin="0,9,0,0"/>
+                                <TextBlock Text="21.1.40 → 21.1.46" FontSize="10" Foreground="{StaticResource Muted}" Margin="0,3,0,0"/>
+                                <TextBlock Text="其余 14 个模组已是最新" FontSize="10" Foreground="{StaticResource Muted}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+
+            <!-- LIBRARY -->
+            <Grid x:Name="LibraryView" Grid.Column="1" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,4,0,14">
+                    <StackPanel>
+                        <TextBlock Text="实例库" FontSize="25" FontWeight="SemiBold"/>
+                        <TextBlock Text="同一个版本可以拥有多套模组" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Button Style="{StaticResource MintButton}" Content="＋ 新建实例" HorizontalAlignment="Right"
+                            VerticalAlignment="Center" Padding="16,8" Click="NewInstanceDialog_Click"/>
+                </Grid>
+                <Grid Grid.Row="1" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="InstanceSearchBox" Height="34" Padding="11,6" VerticalContentAlignment="Center"
+                             FontSize="12" BorderBrush="{StaticResource Line}" Background="#F8FCFA"
+                             TextChanged="InstanceSearch_TextChanged"/>
+                    <TextBlock Grid.Column="1" x:Name="InstanceCountText" Text="" FontSize="10.5"
+                               Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                </Grid>
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <WrapPanel x:Name="InstanceCards"/>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- MODS -->
+            <Grid x:Name="ModsView" Grid.Column="1" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,4,0,14">
+                    <StackPanel>
+                        <TextBlock Text="模组" FontSize="25" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="ModCountText" Text="本地实例的模组" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Style="{StaticResource SoftButton}" Content="A → Z" Margin="0,0,7,0" Click="SortMods_Click"/>
+                        <Button Style="{StaticResource SoftButton}" Content="检查更新" Margin="0,0,7,0" Click="CheckUpdates_Click"/>
+                        <Button Style="{StaticResource SoftButton}" Content="刷新" Click="RefreshMods_Click"/>
+                    </StackPanel>
+                </Grid>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Border Style="{StaticResource ModernCard}" Padding="0">
+                            <StackPanel>
+                                <Grid Margin="20,16,20,12">
+                                    <TextBlock Text="已安装模组" FontSize="14" FontWeight="SemiBold"/>
+                                    <Button Style="{StaticResource SoftButton}" Content="打开 mods 文件夹" HorizontalAlignment="Right"
+                                            Click="OpenModsFolder_Click"/>
+                                </Grid>
+                                <Border Height="1" Background="{StaticResource Line}"/>
+                                <StackPanel x:Name="ModsStack" Margin="0,6,0,8"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- DOWNLOAD -->
+            <Grid x:Name="DownloadView" Grid.Column="1" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Margin="0,4,0,14">
+                    <TextBlock Text="下载" FontSize="25" FontWeight="SemiBold"/>
+                    <TextBlock Text="从 Modrinth 搜索模组和整合包" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/>
+                    <TextBlock x:Name="DownloadContextText" Text="" FontSize="10.5" Foreground="{StaticResource MintDeep}" Margin="0,5,0,0"/>
+                </StackPanel>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Border Style="{StaticResource ModernCard}" Padding="20" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="下载 Minecraft 版本" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="下载后才会出现在版本列表里" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="0,4,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="McVersionBox" Height="36"/>
+                                    <Button Grid.Column="1" Style="{StaticResource MintButton}" Content="下载版本"
+                                            Margin="10,0,0,0" Padding="18,8" Click="DownloadMinecraftVersion_Click"/>
+                                </Grid>
+                                <TextBlock x:Name="McVersionStatus" Text="正在读取 Mojang 版本列表…" FontSize="10.5"
+                                           Foreground="{StaticResource Muted}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource ModernCard}" Padding="20">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="130"/>
+                                        <ColumnDefinition Width="110"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="SearchBox" Height="38" Padding="12,7" BorderBrush="{StaticResource Line}"
+                                             Background="#F8FCFA" VerticalContentAlignment="Center" FontSize="12"
+                                             Text="sodium"/>
+                                    <ComboBox x:Name="DownloadLoader" Grid.Column="1" Margin="10,0,0,0" Height="38" SelectedIndex="0">
+                                        <ComboBoxItem Content="NeoForge"/>
+                                        <ComboBoxItem Content="Fabric"/>
+                                        <ComboBoxItem Content="Forge"/>
+                                    </ComboBox>
+                                    <ComboBox x:Name="DownloadVersion" Grid.Column="2" Margin="10,0,0,0" Height="38" SelectedIndex="0">
+                                        <ComboBoxItem Content="1.21.1"/>
+                                        <ComboBoxItem Content="26.3"/>
+                                    </ComboBox>
+                                    <Button Grid.Column="3" Style="{StaticResource MintButton}" Content="搜索" Margin="10,0,0,0"
+                                            Padding="20,9" Click="SearchMods_Click"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock x:Name="DownloadStatus" Text="输入关键词，按当前实例筛选。" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,12,0,0"/>
+                        <WrapPanel x:Name="DownloadResults" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- SETTINGS -->
+            <Grid x:Name="SettingsView" Grid.Column="1" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Margin="0,4,0,14">
+                    <TextBlock Text="设置" FontSize="25" FontWeight="SemiBold"/>
+                    <TextBlock Text="账号、游戏目录和启动参数" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/>
+                </StackPanel>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Border Style="{StaticResource ModernCard}" Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="账号" FontSize="14" FontWeight="SemiBold"/>
+                                <Grid Margin="0,12,0,0">
+                                    <StackPanel>
+                                        <TextBlock x:Name="SettingsAccountName" Text="Steve" FontSize="13" FontWeight="SemiBold"/>
+                                        <TextBlock x:Name="SettingsAccountType" Text="离线账号" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                    <Button Style="{StaticResource SoftButton}" Content="编辑账号" HorizontalAlignment="Right"
+                                            VerticalAlignment="Center" Click="Account_Click"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource ModernCard}" Padding="20" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="游戏" FontSize="14" FontWeight="SemiBold"/>
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="游戏目录" FontSize="11" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="GameDirText" Grid.Column="1" Text="%APPDATA%\.minecraft" FontSize="11.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="内存" FontSize="11" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="MemoryBox" Grid.Column="1" Height="32" SelectionChanged="Memory_SelectionChanged">
+                                        <ComboBoxItem Content="2048"/>
+                                        <ComboBoxItem Content="4096"/>
+                                        <ComboBoxItem Content="6144"/>
+                                        <ComboBoxItem Content="8192"/>
+                                        <ComboBoxItem Content="12288"/>
+                                        <ComboBoxItem Content="16384"/>
+                                    </ComboBox>
+                                </Grid>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Java" FontSize="11" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="JavaBox" Grid.Column="1" Height="32" Text="自动选择" VerticalContentAlignment="Center"
+                                             LostFocus="Java_LostFocus"/>
+                                    <Button Grid.Column="2" Style="{StaticResource SoftButton}" Content="浏览" Margin="8,0,0,0"
+                                            Click="BrowseJava_Click"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource ModernCard}" Padding="20" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="启动" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="启动时不会弹出 CMD 窗口；日志会显示在启动页。" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <Border x:Name="Toast" Grid.Row="1" Background="#15362C" CornerRadius="12" Padding="15,10"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,24,22"
+                Visibility="Collapsed" Panel.ZIndex="30">
+            <TextBlock x:Name="ToastText" Foreground="White" FontSize="11.5"/>
+        </Border>
+    </Grid>
+</Window>

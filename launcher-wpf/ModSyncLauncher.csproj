@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\avatar.png" />
+    <Resource Include="Assets\modsync.png" />
+    <Resource Include="Assets\ModSync-26.3.jar" />
+    <Resource Include="Assets\ModSync-1.21.1.jar" />
+  </ItemGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Assets\modsync.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\modsync.ico" />
+  </ItemGroup>
+</Project>

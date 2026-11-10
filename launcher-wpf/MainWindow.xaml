@@ -1,0 +1,511 @@
+<Window x:Class="ModSyncLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:controls="clr-namespace:ModSyncLauncher.Controls"
+        Title="ModSync Launcher" Height="700" Width="1040"
+        MinHeight="580" MinWidth="900"
+        WindowStyle="None" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen"
+        Background="#F3F7F5"
+        FontFamily="Segoe UI, Microsoft YaHei UI"
+        Foreground="#1B2823"
+        TextOptions.TextFormattingMode="Ideal"
+        Loaded="Window_Loaded">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="26"/>
+        </Grid.RowDefinitions>
+
+        <!-- PCL title bar -->
+        <Border Grid.Row="0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#38CDA9" Offset="0"/>
+                    <GradientStop Color="#1E9F81" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid Margin="12,0,6,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="26" Height="26" CornerRadius="5" Background="#26FFFFFF">
+                        <TextBlock Text="M" FontWeight="Bold" FontSize="14" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="ModSync" FontSize="13" FontWeight="SemiBold" Foreground="White"
+                               Margin="8,0,10,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Center">
+                    <RadioButton x:Name="TabStart" Style="{StaticResource TopTab}" Tag="start" GroupName="topTabs"
+                                 IsChecked="True" Checked="TopTab_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="▶" FontSize="11" Foreground="#E8FFF9" VerticalAlignment="Center"/>
+                            <TextBlock Text="启动" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="TabDownload" Style="{StaticResource TopTab}" Tag="download" GroupName="topTabs" Checked="TopTab_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="↓" FontSize="13" Foreground="#E8FFF9" VerticalAlignment="Center"/>
+                            <TextBlock Text="下载" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    
+                    <RadioButton x:Name="TabSettings" Style="{StaticResource TopTab}" Tag="settings" GroupName="topTabs" Checked="TopTab_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚙" FontSize="12" Foreground="#E8FFF9" VerticalAlignment="Center"/>
+                            <TextBlock Text="设置" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="TabMore" Style="{StaticResource TopTab}" Tag="more" GroupName="topTabs" Checked="TopTab_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⋯" FontSize="14" Foreground="#E8FFF9" VerticalAlignment="Center"/>
+                            <TextBlock Text="更多" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource TitleBarButton}" Content="—" Click="Minimize_Click"/>
+                    <Button Style="{StaticResource TitleBarButton}" Content="□" Click="Maximize_Click"/>
+                    <Button Style="{StaticResource TitleBarButton}" Content="×" Click="Close_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+
+            <!-- START: PCL launch page: left 300 launch control + right log -->
+            <Grid x:Name="PageStart">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="#F8FBFA" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                    <Grid Margin="20,20,20,18">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,18">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="36" Height="36" CornerRadius="5" Background="#EFF5F2">
+                                <TextBlock Text="?" FontSize="17" Foreground="#93A39B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="离线模式" FontSize="12.5" FontWeight="SemiBold"/>
+                                <TextBlock Text="本地用户名" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Grid.Row="1">
+                            <TextBlock Text="游戏版本" FontSize="10.5" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,6"/>
+                            <Border Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="5"
+                                    Padding="12,10">
+                                <Grid>
+                                    <StackPanel>
+                                        <TextBlock Text="1.21.1 · NeoForge" FontSize="13" FontWeight="SemiBold"/>
+                                        <TextBlock Text="21.1.265  ·  15 个模组" FontSize="10.5" Foreground="{StaticResource MutedBrush}" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                    <TextBlock Text="▾" FontSize="11" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <Button Grid.Row="2" Style="{StaticResource PrimaryButton}" Content="▶   启动游戏" Height="52" Margin="0,14,0,0"
+                                FontSize="16" Click="Launch_Click"/>
+
+                        <StackPanel Grid.Row="3" Margin="0,16,0,0">
+                            <Button Style="{StaticResource SecondaryButton}" Content="版本设置" Margin="0,0,0,7" Height="30"/>
+                            <Button Style="{StaticResource SecondaryButton}" Content="打开目录" Margin="0,0,0,7" Height="30" Click="OpenFolder_Click"/>
+                            <Button Style="{StaticResource SecondaryButton}" Content="检查模组更新" Height="30" Click="CheckUpdate_Click"/>
+                        </StackPanel>
+
+                        <Border Grid.Row="4" Background="{StaticResource MintSoftBrush}" CornerRadius="5" Padding="10">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="●" FontSize="8" Foreground="{StaticResource MintDeepBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="服务器已同步" FontSize="11" FontWeight="SemiBold" Margin="5,0,0,0"/>
+                                </StackPanel>
+                                <TextBlock Text="15 个模组 · 0 个缺失" FontSize="10.5" Foreground="{StaticResource MutedBrush}" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="25,22,25,20">
+                        <controls:PclCard Header="启动日志">
+                            <StackPanel>
+                                
+                                <TextBlock Text="[12:04:21] [ModSync] 正在检查服务器模组…" FontSize="11.5"
+                                           Foreground="{StaticResource MutedBrush}" Margin="0,10,0,0"/>
+                                <TextBlock Text="[12:04:22] [ModSync] 15 个模组已就绪，0 个需要更新。" FontSize="11.5"
+                                           Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                                <TextBlock Text="[12:04:22] [启动器] 等待启动游戏。" FontSize="11.5"
+                                           Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                                <Border Background="#F8FBFA" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0"
+                                        Padding="0,10,0,0" Margin="0,12,0,0">
+                                    <TextBlock Text="账号和版本信息加载完成后，即可启动。" FontSize="10.5"
+                                               Foreground="#9AA9A1"/>
+                                </Border>
+                            </StackPanel>
+                        </controls:PclCard>
+
+                        <controls:PclCard Header="服务器">
+                            <StackPanel>
+                                <Grid>
+                                    
+                                    <TextBlock Text="已同步" FontSize="10.5" Foreground="{StaticResource MintDeepBrush}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="88"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="服务器地址" Style="{StaticResource FormLabel}"/>
+                                    <TextBlock Grid.Column="1" Text="jensen-tagging.tun.ply.gg:9396" FontSize="12"/>
+                                </Grid>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="88"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="同步地址" Style="{StaticResource FormLabel}"/>
+                                    <TextBlock Grid.Column="1" Text="http://127.0.0.1:33400/modsync" FontSize="12"/>
+                                </Grid>
+                            </StackPanel>
+                        </controls:PclCard>
+
+                        <controls:PclCard Header="最近更新">
+                            <StackPanel>
+                                
+                                <TextBlock Text="Waystones 已从 21.1.40 更新到 21.1.46" FontSize="11.5"
+                                           Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </controls:PclCard>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- DOWNLOAD: left 170 nav + right search -->
+            <Grid x:Name="PageDownload" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Background="#F8FBFA" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                    <StackPanel Margin="10,14,10,10">
+                        <TextBlock Text="游戏组件" FontSize="10" Foreground="#93A39B" Margin="10,0,0,6"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="原版游戏" GroupName="downloadNav" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="Forge" GroupName="downloadNav" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="NeoForge" GroupName="downloadNav" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="Fabric" GroupName="downloadNav" Height="34"/>
+                        <TextBlock Text="资源" FontSize="10" Foreground="#93A39B" Margin="10,12,0,6"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="Mod" GroupName="downloadNav" IsChecked="True" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="整合包" GroupName="downloadNav" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="资源包" GroupName="downloadNav" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="光影包" GroupName="downloadNav" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="数据包" GroupName="downloadNav" Height="34"/>
+                        <TextBlock Text="来源" FontSize="10" Foreground="#93A39B" Margin="10,16,0,6"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="Modrinth" GroupName="downloadSource" IsChecked="True" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="CurseForge" GroupName="downloadSource" Height="34"/>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="25,20,25,20">
+                        <controls:PclCard Header="搜索 Mod">
+                            <StackPanel>
+                                
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="1.3*"/>
+                                        <ColumnDefinition Width="1.2*"/>
+                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="1*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="9"/>
+                                        <RowDefinition Height="28"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="名称" VerticalAlignment="Center" Margin="0,0,18,0"/>
+                                    <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="sodium" VerticalContentAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="来源" VerticalAlignment="Center" Margin="0,0,18,0"/>
+                                    <ComboBox Grid.Column="5" SelectedIndex="0" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Modrinth"/>
+                                        <ComboBoxItem Content="CurseForge"/>
+                                    </ComboBox>
+                                    <TextBlock Grid.Row="2" Text="版本" VerticalAlignment="Center" Margin="0,0,18,0"/>
+                                    <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" SelectedIndex="0" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="1.21.1"/>
+                                        <ComboBoxItem Content="26.3"/>
+                                    </ComboBox>
+                                    <TextBlock Grid.Row="2" Grid.Column="4" Text="加载器" VerticalAlignment="Center" Margin="0,0,18,0"/>
+                                    <ComboBox Grid.Row="2" Grid.Column="5" SelectedIndex="1" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="全部"/>
+                                        <ComboBoxItem Content="NeoForge"/>
+                                        <ComboBoxItem Content="Fabric"/>
+                                        <ComboBoxItem Content="Forge"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Button Style="{StaticResource PrimaryButton}" Content="搜索" MinWidth="140" Click="Search_Click"/>
+                                    <Button Style="{StaticResource SecondaryButton}" Content="重置条件" MinWidth="140" Margin="16,0,0,0"/>
+                                    <Button Style="{StaticResource SecondaryButton}" Content="安装已有整合包" MinWidth="140" Margin="16,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </controls:PclCard>
+
+                        <controls:PclCard Header="搜索结果">
+                            <StackPanel>
+                                <Grid Margin="16,12,16,9">
+                                    
+                                    <TextBlock Text="NeoForge 1.21.1" FontSize="10.5" Foreground="{StaticResource MutedBrush}"
+                                               HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Border Height="1" Background="{StaticResource BorderBrush}"/>
+                                <Grid Margin="16,6,16,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="60"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="名称" Style="{StaticResource TableHeaderText}"/>
+                                    <TextBlock Grid.Column="1" Text="下载量" Style="{StaticResource TableHeaderText}"/>
+                                    <TextBlock Grid.Column="2" Text="版本" Style="{StaticResource TableHeaderText}"/>
+                                    <TextBlock Grid.Column="3" Text="操作" Style="{StaticResource TableHeaderText}"/>
+                                </Grid>
+                                <Border Height="1" Background="#EDF4F1"/>
+                                <Grid Height="36" Margin="16,0,16,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="60"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Width="22" Height="22" CornerRadius="4" Background="#EAF8F3">
+                                            <TextBlock Text="S" FontSize="10" FontWeight="Bold" Foreground="{StaticResource MintDeepBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Sodium" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="63.2M" FontSize="11" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="1.21.1" FontSize="11" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" Content="安装" HorizontalAlignment="Left" FontSize="11.5"/>
+                                </Grid>
+                                <Border Height="1" Background="#EDF4F1"/>
+                                <Grid Height="36" Margin="16,0,16,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="60"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Width="22" Height="22" CornerRadius="4" Background="#FFF4E8">
+                                            <TextBlock Text="J" FontSize="10" FontWeight="Bold" Foreground="#B97832"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Jade" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="31.8M" FontSize="11" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="1.21.1" FontSize="11" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" Content="安装" HorizontalAlignment="Left" FontSize="11.5"/>
+                                </Grid>
+                                <Border Height="1" Background="#EDF4F1"/>
+                                <Grid Height="36" Margin="16,0,16,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="60"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Width="22" Height="22" CornerRadius="4" Background="#EEF2FF">
+                                            <TextBlock Text="C" FontSize="10" FontWeight="Bold" Foreground="#4B62B8"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Cloth Config" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="28.4M" FontSize="11" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="1.21.1" FontSize="11" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" Content="安装" HorizontalAlignment="Left" FontSize="11.5"/>
+                                </Grid>
+                            </StackPanel>
+                        </controls:PclCard>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- SETTINGS -->
+            <Grid x:Name="PageSettings" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Background="#F8FBFA" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                    <StackPanel Margin="10,14,10,10">
+                        <RadioButton Style="{StaticResource SubTab}" Content="启动" GroupName="settingsNav" IsChecked="True" Height="36"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="联机" GroupName="settingsNav" Height="36"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="个性化" GroupName="settingsNav" Height="36"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="其他" GroupName="settingsNav" Height="36"/>
+                    </StackPanel>
+                </Border>
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="25,20,25,20">
+                        <controls:PclCard Header="启动选项">
+                            <StackPanel>
+                                
+                                <Border Style="{StaticResource FormRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="默认版本隔离" Style="{StaticResource FormLabel}"/>
+                                        <TextBlock Grid.Column="1" Text="隔离可安装 Mod 的版本" FontSize="12"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource FormRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="游戏窗口标题" Style="{StaticResource FormLabel}"/>
+                                        <TextBlock Grid.Column="1" Text="默认" FontSize="12"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource FormRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="自定义信息" Style="{StaticResource FormLabel}"/>
+                                        <TextBlock Grid.Column="1" Text="ModSync" FontSize="12"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource FormRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="启动器可见性" Style="{StaticResource FormLabel}"/>
+                                        <TextBlock Grid.Column="1" Text="游戏启动后保持显示" FontSize="12"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource FormRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="进程优先级" Style="{StaticResource FormLabel}"/>
+                                        <TextBlock Grid.Column="1" Text="中（平衡）" FontSize="12"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource FormRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="窗口大小" Style="{StaticResource FormLabel}"/>
+                                        <TextBlock Grid.Column="1" Text="默认" FontSize="12"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource FormRow}">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="游戏 Java" Style="{StaticResource FormLabel}"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <TextBlock Text="自动选择合适的 Java" FontSize="12" VerticalAlignment="Center"/>
+                                            <Button Style="{StaticResource LinkButton}" Content="自动搜索" Margin="10,0,0,0" FontSize="11"/>
+                                            <Button Style="{StaticResource LinkButton}" Content="手动导入" Margin="8,0,0,0" FontSize="11"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource FormRow}" BorderThickness="0">
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="游戏内存" Style="{StaticResource FormLabel}"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="自动配置" FontSize="12"/>
+                                            <Grid Margin="0,6,0,0">
+                                                <Border Height="4" Background="#E9F1ED" CornerRadius="2" VerticalAlignment="Center"/>
+                                                <Border Height="4" Width="150" Background="{StaticResource MintBrush}" CornerRadius="2" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                            </Grid>
+                                            <Grid Margin="0,4,0,0">
+                                                <TextBlock Text="已使用 24.8 GB / 31.8 GB" FontSize="10" Foreground="{StaticResource MutedBrush}"/>
+                                                <TextBlock Text="游戏分配 4.7 GB" FontSize="10" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </controls:PclCard>
+
+                        <controls:PclCard Header="下载选项">
+                            <StackPanel>
+                                
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="版本列表获取" Style="{StaticResource FormLabel}"/>
+                                    <ComboBox Grid.Column="1" SelectedIndex="0"><ComboBoxItem Content="尽量使用镜像源（加载快，但版本可能不全）"/><ComboBoxItem Content="官方源"/></ComboBox>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Mod 命名风格" Style="{StaticResource FormLabel}"/>
+                                    <ComboBox Grid.Column="1" SelectedIndex="0"><ComboBoxItem Content="译名位于文件名开头：[译名] mod-1.0.jar"/><ComboBoxItem Content="保留原始文件名"/></ComboBox>
+                                </Grid>
+                            </StackPanel>
+                        </controls:PclCard>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- MORE -->
+            <Grid x:Name="PageMore" Visibility="Collapsed">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Border Background="#F8FBFA" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                    <StackPanel Margin="10,14,10,10">
+                        <RadioButton Style="{StaticResource SubTab}" Content="日志" GroupName="moreNav" IsChecked="True" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="崩溃报告" GroupName="moreNav" Height="34"/>
+                        <RadioButton Style="{StaticResource SubTab}" Content="关于" GroupName="moreNav" Height="34"/>
+                    </StackPanel>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="25,20">
+                    <TextBlock Text="更多" FontSize="21" FontWeight="SemiBold"/>
+                    <controls:PclCard Header="">
+                        <StackPanel>
+                            <TextBlock Text="ModSync Launcher 0.1" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBlock Text="PCL 布局 · 薄荷绿 · WPF 原生" FontSize="11.5" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </controls:PclCard>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
+            <Grid Margin="12,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="●" FontSize="8" Foreground="{StaticResource MintDeepBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="就绪" FontSize="10" Foreground="{StaticResource MutedBrush}" Margin="5,0,0,0"/>
+                    <TextBlock Text="  ·  15 个模组  ·  0 个缺失" FontSize="10" Foreground="{StaticResource MutedBrush}"/>
+                </StackPanel>
+                <TextBlock Text="ModSync 1.4.0" FontSize="10" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <Border x:Name="Toast" Grid.Row="1" Background="#1B2823" CornerRadius="4" Padding="12,8"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,18,16"
+                Visibility="Collapsed" Panel.ZIndex="20">
+            <TextBlock x:Name="ToastText" Foreground="White" FontSize="11"/>
+        </Border>
+    </Grid>
+</Window>

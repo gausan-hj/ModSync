@@ -1,0 +1,61 @@
+<Window x:Class="ModSyncLauncher.AccountWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="账号" Width="460" Height="470"
+        WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#F3FAF7"
+        FontFamily="Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI"
+        Foreground="#15362C">
+    <Border Background="#F3FAF7" BorderBrush="#D8ECE4" BorderThickness="1" CornerRadius="18">
+        <Grid Margin="22">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <TextBlock Text="账号" FontSize="19" FontWeight="SemiBold"/>
+                <Button Content="×" Width="30" Height="30" HorizontalAlignment="Right" Background="Transparent"
+                        BorderThickness="0" FontSize="16" Foreground="#6A7F76" Cursor="Hand" Click="Close_Click"/>
+            </Grid>
+
+            <StackPanel Grid.Row="1" Margin="0,18,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="AvatarPreview" Width="78" Height="78" CornerRadius="20" Background="#E4F8F1"/>
+                    <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="头像" FontSize="11" Foreground="#758981"/>
+                        <Button x:Name="ChooseAvatar" Content="选择图片…" HorizontalAlignment="Left" Margin="0,7,0,0"
+                                Padding="14,7" Background="#E4F8F1" Foreground="#17886C" BorderThickness="0"
+                                FontWeight="SemiBold" Cursor="Hand" Click="ChooseAvatar_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="用户名" FontSize="11" Foreground="#758981" Margin="0,20,0,6"/>
+                <TextBox x:Name="NameBox" Height="36" Padding="10,6" BorderBrush="#D8ECE4" Background="White"
+                         VerticalContentAlignment="Center" FontSize="13"/>
+
+                <TextBlock Text="账号类型" FontSize="11" Foreground="#758981" Margin="0,14,0,6"/>
+                <ComboBox x:Name="TypeBox" Height="36" SelectedIndex="0" FontSize="13" SelectionChanged="TypeBox_SelectionChanged">
+                    <ComboBoxItem Content="离线账号"/>
+                    <ComboBoxItem Content="微软账号"/>
+                </ComboBox>
+                <Button Content="使用微软账号登录…" HorizontalAlignment="Left" Margin="0,10,0,0" Padding="14,7"
+                        Background="#E4F8F1" Foreground="#17886C" BorderThickness="0" FontWeight="SemiBold"
+                        Cursor="Hand" Click="MicrosoftLogin_Click"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                <Button Content="取消" Padding="18,9" Background="Transparent" BorderThickness="0" Foreground="#758981"
+                        Cursor="Hand" Click="Cancel_Click"/>
+                <Button Content="保存" Padding="24,9" Background="#17886C" Foreground="White" BorderThickness="0"
+                        FontWeight="SemiBold" Cursor="Hand" Click="Save_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

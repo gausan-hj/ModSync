@@ -17,6 +17,39 @@ Forge/NeoForge : 标题界面点 ModSync -> HTTP 清单 -> 下载 -> 重启 -> �
 
 ---
 
+## 启动器
+
+仓库包含一个 WPF 启动器，位于 [`launcher-wpf/`](launcher-wpf/)：
+
+- 微软账号登录 / 离线账号；
+- 多实例，同一 Minecraft 版本可以有多套模组；
+- 实例库、新建/删除实例；
+- Modrinth 模组搜索和安装；
+- 模组图标、禁用/启用、删除、A→Z、检查更新；
+- 内存和 Java 可调；
+- 下载 Minecraft 版本；
+- NeoForge / Fabric / Forge 选择；
+- 启动时不弹出 CMD 窗口；
+- ModSync 作为必装模组自动内置。
+
+构建：
+
+```bash
+dotnet build launcher-wpf/ModSyncLauncher.csproj -c Release
+```
+
+生成：
+
+```text
+launcher-wpf/bin/Release/net10.0-windows/ModSyncLauncher.exe
+```
+
+启动器界面预览：
+
+![启动器](launcher-wpf/modern-preview.png)
+
+---
+
 ## 下载
 
 **最新发布：<https://github.com/gausan-hj/ModSync/releases/latest>**

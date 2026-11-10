@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ModSync Launcher</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div>
+        <div class="brand-name">ModSync Launcher</div>
+        <div class="brand-sub">实例、模组、服务器同步</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span id="health" class="status">连接中…</span>
+      <button id="newInstance" class="btn primary">新建实例</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">实例</div>
+      <div id="instances" class="instance-list"></div>
+      <div id="emptyInstances" class="empty">还没有实例<br><span>点击右上角新建</span></div>
+    </aside>
+
+    <main class="main">
+      <section class="instance-head">
+        <div>
+          <h1 id="instanceName">选择一个实例</h1>
+          <div id="instanceMeta" class="meta">从左侧选择，或新建一个实例。</div>
+        </div>
+        <div class="head-actions">
+          <button id="openFolder" class="btn" disabled>打开目录</button>
+          <button id="launch" class="btn primary" disabled>启动游戏</button>
+        </div>
+      </section>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="search">搜索模组</button>
+        <button class="tab" data-tab="installed">已安装</button>
+        <button class="tab" data-tab="sync">服务器同步</button>
+        <button class="tab" data-tab="settings">实例设置</button>
+      </nav>
+
+      <section id="tab-search" class="panel active">
+        <div class="search-row">
+          <input id="searchInput" placeholder="搜索 Modrinth 模组，例如 sodium、jei、waystones">
+          <select id="loaderSelect">
+            <option value="fabric">Fabric</option>
+            <option value="neoforge">NeoForge</option>
+            <option value="forge">Forge</option>
+          </select>
+          <input id="mcInput" value="1.21.1" title="Minecraft 版本">
+          <button id="searchBtn" class="btn primary">搜索</button>
+        </div>
+        <div id="searchHint" class="hint">按当前实例的加载器和版本自动筛选。</div>
+        <div id="searchResults" class="cards"></div>
+      </section>
+
+      <section id="tab-installed" class="panel">
+        <div class="section-title">
+          <span>已安装模组</span>
+          <button id="refreshMods" class="btn small">刷新</button>
+        </div>
+        <div id="modList" class="mod-list"></div>
+      </section>
+
+      <section id="tab-sync" class="panel">
+        <div class="sync-box">
+          <h2>从 ModSync 服务器同步</h2>
+          <p>填入房主的同步地址。例如：</p>
+          <pre>http://127.0.0.1:25567</pre>
+          <div class="sync-row">
+            <input id="syncUrl" placeholder="http://房主地址:同步端口">
+            <button id="syncBtn" class="btn primary">同步</button>
+          </div>
+          <div class="hint">支持直接填 /modsync 地址；会读取 manifest.json 并校验 SHA-256。</div>
+        </div>
+        <div id="syncLog" class="log"></div>
+      </section>
+
+      <section id="tab-settings" class="panel">
+        <div class="settings">
+          <label>实例名称
+            <input id="settingName">
+          </label>
+          <label>启动命令
+            <input id="settingLaunch" placeholder="例如：C:\\Path\\To\\launcher.exe --profile modsync">
+          </label>
+          <p class="hint">启动命令不是 Minecraft 登录器本身；它会在实例目录执行。留空则只能用外部启动器启动。</p>
+          <button id="saveSettings" class="btn primary">保存设置</button>
+          <div id="settingsMsg" class="hint"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="createDialog">
+    <form id="createForm" method="dialog">
+      <h2>新建实例</h2>
+      <label>名称<input name="name" required placeholder="我的 1.21.1 生存"></label>
+      <div class="two">
+        <label>加载器
+          <select name="loader">
+            <option value="fabric">Fabric</option>
+            <option value="neoforge">NeoForge</option>
+            <option value="forge">Forge</option>
+          </select>
+        </label>
+        <label>Minecraft<input name="mcVersion" value="1.21.1"></label>
+      </div>
+      <label>实例目录（可选）<input name="path" placeholder="留空自动创建"></label>
+      <div class="dialog-actions">
+        <button type="button" id="cancelCreate" class="btn">取消</button>
+        <button type="submit" class="btn primary">创建</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

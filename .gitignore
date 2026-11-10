@@ -32,3 +32,17 @@ Thumbs.db
 
 forge-test-server/
 
+
+# WPF launcher build output
+launcher-wpf/bin/
+launcher-wpf/obj/
+
+# Launcher temporary/test artifacts
+launcher-wpf/orig.jar
+launcher-wpf/orig-icon.png
+launcher-wpf/exe-icon.png
+launcher-sync-test/
+launcher-test-instance/
+launcher/node_modules/
+launcher/data/
+launcher/*.log
