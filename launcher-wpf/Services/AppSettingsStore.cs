@@ -7,6 +7,8 @@ public sealed class AppSettings
 {
     public int MemoryMb { get; set; } = 4096;
     public string? JavaPath { get; set; }
+    public string? SyncUrl { get; set; }
+    public bool AutoSync { get; set; } = true;
 }
 
 public static class AppSettingsStore

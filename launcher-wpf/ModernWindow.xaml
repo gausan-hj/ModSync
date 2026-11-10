@@ -569,6 +569,25 @@
                                 <TextBlock Text="启动时不会弹出 CMD 窗口；日志会显示在启动页。" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
+
+                        <Border Style="{StaticResource ModernCard}" Padding="20" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="启动前同步" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="开服方 ModSync 地址，例如 http://play.example.com:8710" FontSize="10.5"
+                                           Foreground="{StaticResource Muted}" Margin="0,5,0,8" TextWrapping="Wrap"/>
+                                <TextBox x:Name="SyncUrlBox" Height="34" Padding="10,6" VerticalContentAlignment="Center"
+                                         FontSize="11.5" BorderBrush="{StaticResource Line}" Background="#F8FCFA"
+                                         LostFocus="SyncSetting_Changed"/>
+                                <Grid Margin="0,10,0,0">
+                                    <CheckBox x:Name="AutoSyncBox" Content="启动游戏前自动同步" FontSize="11"
+                                              VerticalAlignment="Center" Checked="SyncSetting_Changed" Unchecked="SyncSetting_Changed"/>
+                                    <Button Style="{StaticResource SoftButton}" Content="立即同步" HorizontalAlignment="Right"
+                                            Click="SyncNow_Click"/>
+                                </Grid>
+                                <TextBlock x:Name="SyncStatus" Text="尚未配置同步地址" FontSize="10.5"
+                                           Foreground="{StaticResource Muted}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

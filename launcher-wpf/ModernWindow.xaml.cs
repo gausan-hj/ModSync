@@ -103,6 +103,9 @@ public partial class ModernWindow : Window
             2048 => 0, 4096 => 1, 6144 => 2, 8192 => 3, 12288 => 4, 16384 => 5, _ => 1,
         };
         JavaBox.Text = string.IsNullOrWhiteSpace(_settings.JavaPath) ? "自动选择" : _settings.JavaPath;
+        SyncUrlBox.Text = _settings.SyncUrl ?? "";
+        AutoSyncBox.IsChecked = _settings.AutoSync;
+        SyncStatus.Text = string.IsNullOrWhiteSpace(_settings.SyncUrl) ? "尚未配置同步地址" : "启动前会自动同步模组";
         _loadingSettings = false;
         UpdateHeroSettings();
         EnsureBundledModSync();
@@ -141,17 +144,28 @@ public partial class ModernWindow : Window
             ? Directory.GetFiles(modsDir).Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase)).ToList()
             : new List<string>();
         if (_sortAZ) files = files.OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase).ToList();
+        var supported = IsModSyncSupported(_activeVersion);
         var modsync = files.FirstOrDefault(f => Path.GetFileName(f).Contains("modsync", StringComparison.OrdinalIgnoreCase));
-        AddModRow("ModSync", "1.4.0", modsync == null ? "必装 · 未安装" : "必装 · 已安装", true, true, modsync);
+        if (supported)
+        {
+            AddModRow("ModSync", "1.4.0", modsync == null ? "必装 · 未安装" : "必装 · 已安装", true, true, modsync);
+        }
+        else
+        {
+            AddModRow("ModSync", "1.4.0", "当前版本不支持", false, true, null);
+        }
         foreach (var file in files.Where(f => !Path.GetFileName(f).Contains("modsync", StringComparison.OrdinalIgnoreCase)))
         {
             var enabled = file.EndsWith(".jar", StringComparison.OrdinalIgnoreCase);
             var name = Path.GetFileName(file).Replace(".jar.disabled", "").Replace(".jar", "");
             AddModRow(name, enabled ? "已启用" : "已禁用", enabled ? "普通" : "已禁用", false, enabled, file);
         }
-        ModCountText.Text = $"共 {files.Count + 1} 个模组 · 其中 ModSync 为必装";
-        InstalledCountText.Text = (files.Count + 1).ToString();
-        HeroModCount.Text = $"{files.Count + 1} 个模组";
+        var count = files.Count + (supported ? 1 : 0);
+        ModCountText.Text = supported
+            ? $"共 {count} 个模组 · 其中 ModSync 为必装"
+            : $"共 {count} 个模组 · 当前版本不支持 ModSync";
+        InstalledCountText.Text = count.ToString();
+        HeroModCount.Text = $"{count} 个模组";
     }
 
     private void AddModRow(string name, string version, string badge, bool required, bool enabled, string? filePath)
@@ -305,12 +319,29 @@ public partial class ModernWindow : Window
         }
     }
 
+    private static bool IsModSyncSupported(string version) =>
+        version.Equals("26.3", StringComparison.OrdinalIgnoreCase) ||
+        version.Equals("1.21.1", StringComparison.OrdinalIgnoreCase);
+
     private void EnsureBundledModSync()
     {
         try
         {
             var modsDir = ActiveModsDir;
             Directory.CreateDirectory(modsDir);
+            if (!IsModSyncSupported(_activeVersion))
+            {
+                foreach (var old in Directory.GetFiles(modsDir, "*modsync*.jar"))
+                {
+                    var name = Path.GetFileName(old);
+                    if (name.Equals("modsync-neoforge-26.3-1.4.0.jar", StringComparison.OrdinalIgnoreCase) ||
+                        name.Equals("modsync-neoforge-1.21.1-1.4.0.jar", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try { File.Delete(old); } catch { }
+                    }
+                }
+                return;
+            }
             if (Directory.GetFiles(modsDir, "*modsync*.jar").Length > 0) return;
             var asset = _activeVersion.StartsWith("26.3", StringComparison.OrdinalIgnoreCase)
                 ? "pack://application:,,,/Assets/ModSync-26.3.jar"
@@ -329,6 +360,41 @@ public partial class ModernWindow : Window
         catch
         {
             // The mods page still shows ModSync as required if bundling fails.
+        }
+    }
+
+    private void SyncSetting_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_loadingSettings) return;
+        _settings.SyncUrl = string.IsNullOrWhiteSpace(SyncUrlBox.Text) ? null : SyncUrlBox.Text.Trim();
+        _settings.AutoSync = AutoSyncBox.IsChecked == true;
+        AppSettingsStore.Save(_settings);
+        SyncStatus.Text = string.IsNullOrWhiteSpace(_settings.SyncUrl)
+            ? "尚未配置同步地址"
+            : (_settings.AutoSync ? "启动前会自动同步模组" : "已关闭自动同步");
+    }
+
+    private async void SyncNow_Click(object sender, RoutedEventArgs e)
+    {
+        SyncSetting_Changed(sender, e);
+        if (string.IsNullOrWhiteSpace(_settings.SyncUrl))
+        {
+            SyncStatus.Text = "请先填写 ModSync 同步地址";
+            return;
+        }
+        try
+        {
+            SyncStatus.Text = "正在同步模组…";
+            var report = await ModSyncHttpSync.SyncAsync(_settings.SyncUrl, ActiveModsDir,
+                message => Dispatcher.Invoke(() => SyncStatus.Text = message));
+            SyncStatus.Text = $"同步完成：新增 {report.Installed} 个，已存在 {report.Skipped} 个，失败 {report.Failed} 个";
+            LoadMods();
+            ShowToast("启动前同步完成");
+        }
+        catch (Exception ex)
+        {
+            SyncStatus.Text = "同步失败：" + ex.Message;
+            ShowToast("同步失败：" + ex.Message);
         }
     }
 
@@ -927,6 +993,22 @@ public partial class ModernWindow : Window
         try
         {
             var launchVersion = version;
+            if (!string.IsNullOrWhiteSpace(_settings.SyncUrl) && _settings.AutoSync)
+            {
+                LaunchStatus.Text = "启动前同步模组…";
+                try
+                {
+                    var syncReport = await ModSyncHttpSync.SyncAsync(_settings.SyncUrl, ActiveModsDir,
+                        message => Dispatcher.Invoke(() => LaunchStatus.Text = message));
+                    LaunchStatus.Text = $"同步完成，新增 {syncReport.Installed} 个模组";
+                    LoadMods();
+                }
+                catch (Exception syncError)
+                {
+                    LaunchStatus.Text = "同步失败，继续以普通启动器启动";
+                    ShowToast("同步失败：" + syncError.Message);
+                }
+            }
             if (_activeInstance?.Loader == "fabric")
             {
                 var fabricDir = Path.Combine(MinecraftLauncher.DefaultGameDir, "versions", _activeInstance.LoaderVersionId ?? "");
