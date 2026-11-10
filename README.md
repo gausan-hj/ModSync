@@ -197,7 +197,7 @@ ModSync/
 
 - 发布与下载：<https://github.com/gausan-hj/ModSync/releases>
 - 问题反馈：<https://github.com/gausan-hj/ModSync/issues>
-- 离线 Wiki：[`wiki/index.html`](wiki/index.html)
+- Wiki：<https://modsync-beta.vercel.app/ModSync-Wiki.html>
 
 ## License
 
